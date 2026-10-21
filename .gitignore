@@ -1,0 +1,36 @@
+# build outputs (the makefiles regenerate them; binaries go to GitHub releases)
+*.obj
+*.err
+*.exe
+*.sys
+*.SYS
+*.drv
+*.DRV
+*.vxd
+*.VXD
+*.map
+*.lib
+*.res
+*.lnk
+*.sym
+*.zip
+__pycache__/
+
+# packaged releases, built from the sources
+/dist/*
+!/dist/README.md
+
+# lab exchange with the eBOX: logs, test data, third-party files; only the
+# FTP server and the on-box batch scripts are published
+/exchange/*
+!/exchange/ftpserver.py
+!/exchange/out/
+/exchange/out/*
+!/exchange/out/*.BAT
+/exchange/out/NETFIX.BAT
+/exchange/out/NETALT.BAT
+
+# RDC's own drivers (proprietary, see net/README.md for where to get them)
+/net/R6040-*/
+/net/*.zip
+/net/r6040vxd/RDCPCI5.ORG

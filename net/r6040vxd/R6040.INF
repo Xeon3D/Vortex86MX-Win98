@@ -1,0 +1,148 @@
+; R6040.INF - open-source NDIS 3.0 miniport R6040.SYS for the RDC R6040
+; Fast Ethernet MAC (Vortex86MX / DM&P eBOX-3300MX), Windows 98 SE.
+;
+; Clean install, also on machines that never had RDC's driver: Device
+; Manager -> the network adapter ("PCI Ethernet Controller" or RDC R6040) ->
+; Update Driver -> Have Disk -> this folder.  The registry layout copies the
+; one RDC's installer creates (DevLoader, DeviceVxDs + NTMPDriver), the
+; layout NDIS.VXD loads NT-style .SYS miniports from.
+; The test batches (OWNNET / INSTALL / TRY) do not use this INF: they swap
+; the file under the existing RDCPCI5.SYS entry so NETUNDO can restore RDC's.
+;
+; Hardware ID: PCI\VEN_17F3&DEV_6040
+
+[Version]
+Signature   = "$Chicago$"
+Class       = Net
+ClassGUID   = {4d36e972-e325-11ce-bfc1-08002be10318}
+Provider    = %V_OWN%
+DriverVer   = 10/20/2026, 2.0.0.10
+
+[Manufacturer]
+%V_OWN% = OWN
+
+[ControlFlags]
+ExcludeFromSelect = PCI\VEN_17F3&DEV_6040
+
+[OWN]
+%R6040.DeviceDesc% = R6040.ndi, PCI\VEN_17F3&DEV_6040
+
+[R6040.ndi]
+AddReg    = R6040.ndi.reg, R6040.params.reg
+CopyFiles = R6040.CopyFiles
+
+[R6040.ndi.reg]
+HKR, Ndi,            DeviceID,         0, "PCI\VEN_17F3&DEV_6040"
+HKR, ,               DevLoader,        0, "*ndis,*ntkern,*ndis"
+HKR, ,               DeviceVxDs,       0, "r6040.sys"
+HKR, ,               NTMPDriver,       0, "r6040.sys"
+HKR, ,               AdapterType,      0, "5"
+HKR, ,               EnumPropPages,    0, "netdi.dll,EnumPropPages"
+HKR, ,               BusType,          0, "5"
+HKR, NDIS,           LogDriverName,    0, "R6040"
+HKR, NDIS,           MajorNdisVersion, 1, 03
+HKR, NDIS,           MinorNdisVersion, 1, 0A
+HKR, Ndi\Interfaces, DefUpper,         0, "ndis3"
+HKR, Ndi\Interfaces, DefLower,         0, "ethernet"
+HKR, Ndi\Interfaces, UpperRange,       0, "ndis3"
+HKR, Ndi\Interfaces, LowerRange,       0, "ethernet"
+
+[R6040.params.reg]
+; Speed / duplex (same values as RDC's driver)
+HKR, Ndi\params\ConnectionType,       ParamDesc, 0, "Connection Type"
+HKR, Ndi\params\ConnectionType,       default,   0, "0"
+HKR, Ndi\params\ConnectionType,       type,      0, "enum"
+HKR, Ndi\params\ConnectionType\enum,  0,         0, "AutoSense"
+HKR, Ndi\params\ConnectionType\enum,  1,         0, "10Mbps"
+HKR, Ndi\params\ConnectionType\enum,  2,         0, "100Mbps"
+HKR, Ndi\params\ConnectionType\enum,  3,         0, "10Mbps Full_Duplex"
+HKR, Ndi\params\ConnectionType\enum,  4,         0, "100Mbps Full_Duplex"
+HKR, ,                                ConnectionType, 0, "0"
+
+; Progress bytes in CMOS for shutdown debugging (read with R6040DBG.EXE)
+HKR, Ndi\params\R6040Diag,            ParamDesc, 0, "Diagnostics (CMOS progress bytes)"
+HKR, Ndi\params\R6040Diag,            default,   0, "1"
+HKR, Ndi\params\R6040Diag,            type,      0, "enum"
+HKR, Ndi\params\R6040Diag\enum,       0,         0, "Off"
+HKR, Ndi\params\R6040Diag\enum,       1,         0, "On"
+HKR, ,                                R6040Diag, 0, "1"
+; CMOS index of the 3 bytes (index, +2, +4): 1 = RTC alarm bytes; or 52..123
+HKR, ,                                R6040DiagCmos, 0, "1"
+
+; Link change indications (NDIS_STATUS_MEDIA_CONNECT / DISCONNECT)
+HKR, Ndi\params\R6040MediaSense,      ParamDesc, 0, "Media sense (link change events)"
+HKR, Ndi\params\R6040MediaSense,      default,   0, "1"
+HKR, Ndi\params\R6040MediaSense,      type,      0, "enum"
+HKR, Ndi\params\R6040MediaSense\enum, 0,         0, "Off"
+HKR, Ndi\params\R6040MediaSense\enum, 1,         0, "On"
+HKR, ,                                R6040MediaSense, 0, "1"
+
+; Restart auto-negotiation after ~10 s without link (ConnectionType 0 only)
+HKR, Ndi\params\R6040AnRestart,       ParamDesc, 0, "Auto-negotiation retry"
+HKR, Ndi\params\R6040AnRestart,       default,   0, "1"
+HKR, Ndi\params\R6040AnRestart,       type,      0, "enum"
+HKR, Ndi\params\R6040AnRestart\enum,  0,         0, "Off"
+HKR, Ndi\params\R6040AnRestart\enum,  1,         0, "On"
+HKR, ,                                R6040AnRestart, 0, "1"
+
+; RDC's internal PHY tuning from the vendor Linux driver (experimental)
+HKR, Ndi\params\R6040PhyTweak,        ParamDesc, 0, "RDC PHY tuning (experimental)"
+HKR, Ndi\params\R6040PhyTweak,        default,   0, "0"
+HKR, Ndi\params\R6040PhyTweak,        type,      0, "enum"
+HKR, Ndi\params\R6040PhyTweak\enum,   0,         0, "Off"
+HKR, Ndi\params\R6040PhyTweak\enum,   1,         0, "On"
+HKR, ,                                R6040PhyTweak, 0, "0"
+
+; Restart auto-negotiation at every start and wait for it (ConnectionType 0)
+HKR, Ndi\params\R6040AnAtInit,        ParamDesc, 0, "Renegotiate link at start"
+HKR, Ndi\params\R6040AnAtInit,        default,   0, "1"
+HKR, Ndi\params\R6040AnAtInit,        type,      0, "enum"
+HKR, Ndi\params\R6040AnAtInit\enum,   0,         0, "Off"
+HKR, Ndi\params\R6040AnAtInit\enum,   1,         0, "On"
+HKR, ,                                R6040AnAtInit, 0, "1"
+
+; Keep the MAC's PHY status poller (MPSCCR) as the BIOS set it up
+HKR, Ndi\params\R6040PhyPoll,         ParamDesc, 0, "MAC PHY status poller"
+HKR, Ndi\params\R6040PhyPoll,         default,   0, "1"
+HKR, Ndi\params\R6040PhyPoll,         type,      0, "enum"
+HKR, Ndi\params\R6040PhyPoll\enum,    0,         0, "Off"
+HKR, Ndi\params\R6040PhyPoll\enum,    1,         0, "On"
+HKR, ,                                R6040PhyPoll, 0, "1"
+
+; TX completion interrupt + TX_POLL re-kick while frames are queued: without
+; it uploads run at ~40% speed after boot (build 8 fix; 0 = builds 3-7)
+HKR, Ndi\params\R6040TxKick,          ParamDesc, 0, "TX completion re-kick"
+HKR, Ndi\params\R6040TxKick,          default,   0, "1"
+HKR, Ndi\params\R6040TxKick,          type,      0, "enum"
+HKR, Ndi\params\R6040TxKick\enum,     0,         0, "Off"
+HKR, Ndi\params\R6040TxKick\enum,     1,         0, "On"
+HKR, ,                                R6040TxKick, 0, "1"
+
+; Live driver counters in the MAC's unused perfect-filter registers
+; (read with R6040DBG /REGS); not shown in the UI
+HKR, ,                                R6040DbgRegs, 0, "1"
+
+; Shutdown handler (stops DMA at system shutdown; frees nothing)
+HKR, Ndi\params\R6040Shutdown,        ParamDesc, 0, "Shutdown handler"
+HKR, Ndi\params\R6040Shutdown,        default,   0, "1"
+HKR, Ndi\params\R6040Shutdown,        type,      0, "enum"
+HKR, Ndi\params\R6040Shutdown\enum,   0,         0, "Off"
+HKR, Ndi\params\R6040Shutdown\enum,   1,         0, "On"
+HKR, ,                                R6040Shutdown, 0, "1"
+
+[R6040.CopyFiles]
+r6040.sys
+
+[DestinationDirs]
+DefaultDestDir   = 11
+R6040.CopyFiles  = 11
+
+[SourceDisksNames]
+1 = "R6040 open driver disk",,
+
+[SourceDisksFiles]
+r6040.sys = 1
+
+[Strings]
+V_OWN            = "eBOX-3300MX open drivers"
+R6040.DeviceDesc = "RDC R6040 Fast Ethernet (open R6040.SYS 2.0 build 10)"

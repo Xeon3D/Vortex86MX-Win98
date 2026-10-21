@@ -1,0 +1,17 @@
+#backup
+/old/
+
+*.drv
+*.vxd
+*.sym
+*.res
+*.bin
+*.obj
+*.lib
+*.map
+*.err
+*.exe
+*.bat
+*.bak
+*.backup
+boxv9x.img
