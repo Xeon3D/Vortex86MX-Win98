@@ -4,7 +4,7 @@ Builds are tested on the eBOX-3300MX by the user. "Confirmed" means confirmed
 on that hardware. R = release, D = debug (DBGMEM in-memory log), C = release
 with the cursor experiments on.
 
-## Build 33 (V33R, V33D) — 2026-10-21, confirmed with V33D on the eBOX (cursor shapes, DOS round trip, DirectDraw)
+## Build 33 (V33R, V33D) — 2026-10-21, confirmed on the eBOX (V33D: cursor shapes, DOS round trip, DirectDraw; V33R: automated install + 3 restarts)
 
 - V32R on the eBOX: the hardware cursor was "completely shot" (garbled shape,
   trails/duplicates). The code programmed the CR C2..CD cursor with a 16-bit
